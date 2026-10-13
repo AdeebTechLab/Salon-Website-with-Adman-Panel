@@ -50,7 +50,9 @@ export default function Footer() {
         </div>
       </div>
       <div className="wrap footer-bottom">
-        <span>© {new Date().getFullYear()} Legend Barber Shop. All rights reserved.</span>
+        <span>
+          © {new Date().getFullYear()} Legend Barber Shop. All rights reserved.
+        </span>
         <span>
           Made for the modern Pakistani gentleman. ·{" "}
           <Link to="/admin" className="footer-admin">
