@@ -1,7 +1,14 @@
 import { useEffect, useState } from "react";
-import { useStore } from "../../store.jsx";
+import { useStore, waNumber } from "../../store.jsx";
 export default function SettingsAdmin() {
-  const { settings, updateSettings, clients, appointments, reviews, clearDemo } = useStore();
+  const {
+    settings,
+    updateSettings,
+    clients,
+    appointments,
+    reviews,
+    clearDemo,
+  } = useStore();
   const demoCount =
     clients.filter((c) => c.demo).length +
     appointments.filter((a) => a.demo).length +
@@ -9,9 +16,14 @@ export default function SettingsAdmin() {
   const [f, setF] = useState(settings);
   const [saved, setSaved] = useState(false);
   useEffect(() => setF(settings), [settings]);
+  /* The website's other WhatsApp links use the number as typed, so ask for +country format */
+  const waOk = /^\s*(\+|00)/.test(f.whatsapp || "") && !!waNumber(f.whatsapp);
   const save = (e) => {
     e.preventDefault();
-    updateSettings(f);
+    updateSettings({
+      ...f,
+      salonName: (f.salonName || "").trim() || "Legend Barber Shop",
+    });
     setSaved(true);
     setTimeout(() => setSaved(false), 1800);
   };
@@ -36,6 +48,18 @@ export default function SettingsAdmin() {
           {saved && <span className="ok-text">Saved successfully.</span>}
         </div>
         <div className="admin-form-grid">
+          <label className="span-2">
+            Salon name
+            <input
+              value={f.salonName || ""}
+              placeholder="e.g. Legend Barber Shop"
+              onChange={(e) => setF({ ...f, salonName: e.target.value })}
+            />
+            <span className="form-hint">
+              Used in the WhatsApp booking message: “I would like to book an
+              appointment at …”
+            </span>
+          </label>
           <label>
             Phone number
             <input
@@ -47,8 +71,22 @@ export default function SettingsAdmin() {
             WhatsApp number
             <input
               value={f.whatsapp}
+              placeholder="+92 300 1234567"
+              inputMode="tel"
+              aria-invalid={waOk ? undefined : true}
               onChange={(e) => setF({ ...f, whatsapp: e.target.value })}
             />
+            {waOk ? (
+              <span className="form-hint">
+                Booking requests are sent to this number. Use international
+                format, e.g. +92 300 1234567.
+              </span>
+            ) : (
+              <span className="field-error">
+                Enter a full WhatsApp number in international format, e.g. +92
+                300 1234567 — booking messages can’t be sent without it.
+              </span>
+            )}
           </label>
           <label>
             Email address
@@ -111,10 +149,14 @@ export default function SettingsAdmin() {
             className="btn outline-dark sm"
             disabled={!demoCount}
             onClick={() =>
-              window.confirm("Remove all sample customers, bookings and reviews?") && clearDemo()
+              window.confirm(
+                "Remove all sample customers, bookings and reviews?",
+              ) && clearDemo()
             }
           >
-            {demoCount ? `Remove demo data (${demoCount})` : "No demo data left"}
+            {demoCount
+              ? `Remove demo data (${demoCount})`
+              : "No demo data left"}
           </button>
         </div>
       </div>

@@ -1,12 +1,24 @@
 import { Link } from "react-router-dom";
-import { heroPhoto } from "../store.jsx";
-import Icon, { Stars } from "./Icon.jsx";
+import {
+  heroPhoto,
+  useStore,
+  ratingStats,
+  publishedReviews,
+} from "../store.jsx";
+import Icon from "./Icon.jsx";
+import { StarMeter } from "./RatingSummary.jsx";
 
 export default function Hero() {
+  const { reviews } = useStore();
+  const rating = ratingStats(publishedReviews(reviews));
   return (
     <section id="top" className="hero">
       <div className="hero-media">
-        <img src={heroPhoto} alt="Barber giving a client a precise haircut" fetchpriority="high" />
+        <img
+          src={heroPhoto}
+          alt="Barber giving a client a precise haircut"
+          fetchpriority="high"
+        />
       </div>
       <div className="hero-shade" aria-hidden="true"></div>
       <div className="wrap hero-in">
@@ -30,8 +42,17 @@ export default function Hero() {
             </Link>
           </div>
           <div className="hero-trust">
-            <Stars value={5} size={15} />
-            <span>4.9/5</span>
+            {rating.count ? (
+              <>
+                <StarMeter value={rating.average} size={15} />
+                <a href="#reviews">
+                  {rating.label}/5 · {rating.count} review
+                  {rating.count === 1 ? "" : "s"}
+                </a>
+              </>
+            ) : (
+              <a href="#reviews">No reviews yet</a>
+            )}
             <i aria-hidden="true"></i>
             <span>500+ happy clients</span>
           </div>

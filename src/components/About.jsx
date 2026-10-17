@@ -1,12 +1,10 @@
-import { sectionPhotos } from "../store.jsx";
+import {
+  sectionPhotos,
+  useStore,
+  ratingStats,
+  publishedReviews,
+} from "../store.jsx";
 import Icon from "./Icon.jsx";
-
-const stats = [
-  ["user", "8+", "Years experience"],
-  ["users", "500+", "Happy clients"],
-  ["star", "4.9", "Average rating"],
-  ["calendar", "7", "Days a week"],
-];
 const points = [
   "Respectful service",
   "Honest pricing",
@@ -15,6 +13,17 @@ const points = [
 ];
 
 export default function About() {
+  const { reviews } = useStore();
+  /* Average rating is calculated from the real reviews */
+  const rating = ratingStats(publishedReviews(reviews));
+  const stats = [
+    ["user", "8+", "Years experience"],
+    ["users", "500+", "Happy clients"],
+    rating.count
+      ? ["star", rating.label, "Average rating"]
+      : ["star", "—", "No ratings yet"],
+    ["calendar", "7", "Days a week"],
+  ];
   return (
     <section id="about" className="sec about-section">
       <div

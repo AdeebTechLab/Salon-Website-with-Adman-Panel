@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar.jsx";
 import Hero from "../components/Hero.jsx";
 import Features from "../components/Features.jsx";
 import Services from "../components/Services.jsx";
+import FeaturedServices from "../components/FeaturedServices.jsx";
 import Packages from "../components/Packages.jsx";
 import Barbers from "../components/Barbers.jsx";
 import About from "../components/About.jsx";
@@ -18,7 +19,10 @@ export default function Home() {
   useEffect(() => {
     if (!hash) return;
     const t = setTimeout(
-      () => document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: "smooth" }),
+      () =>
+        document
+          .getElementById(hash.slice(1))
+          ?.scrollIntoView({ behavior: "smooth" }),
       60,
     );
     return () => clearTimeout(t);
@@ -31,6 +35,7 @@ export default function Home() {
         <Hero />
         <Features />
         <Services />
+        <FeaturedServices />
         <Packages />
         <Barbers />
         <About />

@@ -11,7 +11,13 @@ export const sectionPhotos = {
 };
 
 /* Service categories shown in "Choose Your Look" and the services menu */
-export const CATEGORIES = ["Haircut", "Beard & Trim", "Facial", "Grooming", "Packages"];
+export const CATEGORIES = [
+  "Haircut",
+  "Beard & Trim",
+  "Facial",
+  "Grooming",
+  "Packages",
+];
 
 /* ---------- Date / format helpers ---------- */
 const pad = (n) => String(n).padStart(2, "0");
@@ -35,21 +41,172 @@ export const fmtDate = (iso) =>
         month: "short",
       })
     : "";
+/* "20 October 2026" — used in the WhatsApp booking message */
+export const fmtLongDate = (iso) =>
+  iso
+    ? new Date(iso + "T00:00:00").toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : "";
+
+/* ---------- Ratings ----------
+   Overall rating is always calculated from the saved reviews (never hardcoded).
+   Only reviews with a rating between 1 and 5 are counted. */
+export const ratingStats = (reviews = []) => {
+  const valid = reviews.filter((r) => {
+    const n = Number(r?.rating);
+    return Number.isFinite(n) && n >= 1 && n <= 5;
+  });
+  const count = valid.length;
+  const average = count
+    ? valid.reduce((t, r) => t + Number(r.rating), 0) / count
+    : 0;
+  return {
+    count,
+    average: Math.round(average * 10) / 10,
+    label: count ? (Math.round(average * 10) / 10).toFixed(1) : null,
+  };
+};
+
+export const publishedReviews = (reviews = []) =>
+  reviews.filter((review) => !review.hidden);
+
+/* ---------- WhatsApp ----------
+   Turns the number saved in Admin → Website into the digits-only format wa.me needs.
+   Accepts "+92 300 1234567", "0092 300 1234567" or local "0300 1234567". */
+export const waNumber = (raw = "") => {
+  let d = String(raw).replace(/\D/g, "");
+  if (d.startsWith("00")) d = d.slice(2);
+  else if (/^0\d{10}$/.test(d)) d = "92" + d.slice(1);
+  return d.length >= 10 && d.length <= 15 ? d : "";
+};
+export const waLink = (raw, text = "") => {
+  const n = waNumber(raw);
+  if (!n) return "";
+  return `https://wa.me/${n}${text ? `?text=${encodeURIComponent(text)}` : ""}`;
+};
+
+/* ---------- Homepage featured services ---------- */
+export const MAX_FEATURED = 4;
+/* Featured ids → service objects (skips deleted services and duplicates, max 4) */
+export const featuredList = (services = [], ids = []) =>
+  [...new Set(Array.isArray(ids) ? ids : [])]
+    .map((id) => services.find((s) => s.id === id))
+    .filter(Boolean)
+    .slice(0, MAX_FEATURED);
 
 /* ---------- Seed data ---------- */
 const services = [
-  { id: "s1", name: "Signature Haircut", category: "Haircut", desc: "Face-shape focused haircut with finishing and styling.", price: 1200, duration: 45, image: px(2076930) },
-  { id: "s2", name: "Skin Fade", category: "Haircut", desc: "Clean low, mid or high skin fade with a sharp finish.", price: 1500, duration: 50, image: px(7518731) },
-  { id: "s7", name: "Kids Haircut", category: "Haircut", desc: "Comfortable, neat haircut for kids and teens.", price: 800, duration: 30, image: px(4952620) },
-  { id: "s3", name: "Beard Trim & Shape", category: "Beard & Trim", desc: "Precision beard shaping, line-up and styling.", price: 700, duration: 30, image: px(4422101) },
-  { id: "s4", name: "Hot Towel Shave", category: "Beard & Trim", desc: "Traditional hot towel shave for a smooth, refreshed finish.", price: 900, duration: 30, image: px(18503658) },
-  { id: "s6", name: "Facial & Cleanup", category: "Facial", desc: "Gentle cleanup and facial care for a fresh, polished look.", price: 1600, duration: 45, image: px(10003357) },
-  { id: "s10", name: "Deep Cleansing Facial", category: "Facial", desc: "Exfoliation, steam and mask for clear, refreshed skin.", price: 2000, duration: 60, image: px(10003357) },
-  { id: "s5", name: "Hair Wash & Styling", category: "Grooming", desc: "Deep cleanse, conditioning and professional styling.", price: 800, duration: 30, image: px(4625627) },
-  { id: "s11", name: "Head & Scalp Massage", category: "Grooming", desc: "Relaxing oil massage to release tension and nourish hair.", price: 700, duration: 20, image: px(4625627) },
-  { id: "pk1", name: "Classic Gentleman Package", category: "Packages", desc: "Haircut & styling, beard trim and a quick facial.", price: 1800, duration: 60, image: px(5568409) },
-  { id: "pk2", name: "Premium Grooming Package", category: "Packages", desc: "Haircut, beard shaping, facial, hair wash & massage.", price: 2800, duration: 90, image: px(4952620) },
-  { id: "pk3", name: "The Legend Package", category: "Packages", desc: "The complete grooming experience for true gentlemen.", price: 3800, duration: 120, image: px(10003357) },
+  {
+    id: "s1",
+    name: "Signature Haircut",
+    category: "Haircut",
+    desc: "Face-shape focused haircut with finishing and styling.",
+    price: 1200,
+    duration: 45,
+    image: px(2076930),
+  },
+  {
+    id: "s2",
+    name: "Skin Fade",
+    category: "Haircut",
+    desc: "Clean low, mid or high skin fade with a sharp finish.",
+    price: 1500,
+    duration: 50,
+    image: px(7518731),
+  },
+  {
+    id: "s7",
+    name: "Kids Haircut",
+    category: "Haircut",
+    desc: "Comfortable, neat haircut for kids and teens.",
+    price: 800,
+    duration: 30,
+    image: px(4952620),
+  },
+  {
+    id: "s3",
+    name: "Beard Trim & Shape",
+    category: "Beard & Trim",
+    desc: "Precision beard shaping, line-up and styling.",
+    price: 700,
+    duration: 30,
+    image: px(4422101),
+  },
+  {
+    id: "s4",
+    name: "Hot Towel Shave",
+    category: "Beard & Trim",
+    desc: "Traditional hot towel shave for a smooth, refreshed finish.",
+    price: 900,
+    duration: 30,
+    image: px(18503658),
+  },
+  {
+    id: "s6",
+    name: "Facial & Cleanup",
+    category: "Facial",
+    desc: "Gentle cleanup and facial care for a fresh, polished look.",
+    price: 1600,
+    duration: 45,
+    image: px(10003357),
+  },
+  {
+    id: "s10",
+    name: "Deep Cleansing Facial",
+    category: "Facial",
+    desc: "Exfoliation, steam and mask for clear, refreshed skin.",
+    price: 2000,
+    duration: 60,
+    image: px(10003357),
+  },
+  {
+    id: "s5",
+    name: "Hair Wash & Styling",
+    category: "Grooming",
+    desc: "Deep cleanse, conditioning and professional styling.",
+    price: 800,
+    duration: 30,
+    image: px(4625627),
+  },
+  {
+    id: "s11",
+    name: "Head & Scalp Massage",
+    category: "Grooming",
+    desc: "Relaxing oil massage to release tension and nourish hair.",
+    price: 700,
+    duration: 20,
+    image: px(4625627),
+  },
+  {
+    id: "pk1",
+    name: "Classic Gentleman Package",
+    category: "Packages",
+    desc: "Haircut & styling, beard trim and a quick facial.",
+    price: 1800,
+    duration: 60,
+    image: px(5568409),
+  },
+  {
+    id: "pk2",
+    name: "Premium Grooming Package",
+    category: "Packages",
+    desc: "Haircut, beard shaping, facial, hair wash & massage.",
+    price: 2800,
+    duration: 90,
+    image: px(4952620),
+  },
+  {
+    id: "pk3",
+    name: "The Legend Package",
+    category: "Packages",
+    desc: "The complete grooming experience for true gentlemen.",
+    price: 3800,
+    duration: 120,
+    image: px(10003357),
+  },
 ];
 
 /* Packages shown on the homepage. Price & duration come from the linked service,
@@ -69,7 +226,12 @@ const packages = [
     badge: "Best Value",
     name: "Premium Grooming",
     desc: "Complete care for a fresh and refined look.",
-    includes: ["Haircut & Styling", "Beard Trim & Shaping", "Facial", "Hair Wash & Massage"],
+    includes: [
+      "Haircut & Styling",
+      "Beard Trim & Shaping",
+      "Facial",
+      "Hair Wash & Massage",
+    ],
   },
   {
     id: "p3",
@@ -77,29 +239,93 @@ const packages = [
     badge: "Premium",
     name: "The Legend Package",
     desc: "The ultimate experience for true gentlemen.",
-    includes: ["Haircut & Styling", "Beard Trim & Shaping", "Facial", "Grooming (Full)", "Hair Wash & Scalp Massage"],
+    includes: [
+      "Haircut & Styling",
+      "Beard Trim & Shaping",
+      "Facial",
+      "Grooming (Full)",
+      "Hair Wash & Scalp Massage",
+    ],
   },
 ];
 
 const barbers = [
-  { id: "b1", name: "Ahmad Raza", role: "Master Barber", experience: "8+ years", specialty: "Fades & Modern Cuts", image: px(5568409) },
-  { id: "b2", name: "Hamza Malik", role: "Beard Specialist", experience: "6+ years", specialty: "Beard Styling & Shaves", image: px(4422101) },
-  { id: "b3", name: "Usman Ahmed", role: "Senior Barber", experience: "7+ years", specialty: "Classic & Premium Grooming", image: px(10003357) },
-  { id: "b4", name: "Bilal Khan", role: "Styling Barber", experience: "5+ years", specialty: "Hair Styling & Texture", image: px(2076930) },
+  {
+    id: "b1",
+    name: "Ahmad Raza",
+    role: "Master Barber",
+    experience: "8+ years",
+    specialty: "Fades & Modern Cuts",
+    image: px(5568409),
+  },
+  {
+    id: "b2",
+    name: "Hamza Malik",
+    role: "Beard Specialist",
+    experience: "6+ years",
+    specialty: "Beard Styling & Shaves",
+    image: px(4422101),
+  },
+  {
+    id: "b3",
+    name: "Usman Ahmed",
+    role: "Senior Barber",
+    experience: "7+ years",
+    specialty: "Classic & Premium Grooming",
+    image: px(10003357),
+  },
+  {
+    id: "b4",
+    name: "Bilal Khan",
+    role: "Styling Barber",
+    experience: "5+ years",
+    specialty: "Hair Styling & Texture",
+    image: px(2076930),
+  },
 ];
 
 /* ---------- Demo data for the admin panel (flagged demo:true) ---------- */
 const demoClients = [
-  ["dc1", "Ali Raza", "0301 2345678", "ali.raza@gmail.com", "Prefers low skin fade, no gel."],
-  ["dc2", "Usama Farooq", "0312 4567890", "", "Regular — visits every 2 weeks."],
-  ["dc3", "Hassan Javed", "0333 7654321", "hassan.javed@outlook.com", "Wedding grooming in December."],
+  [
+    "dc1",
+    "Ali Raza",
+    "0301 2345678",
+    "ali.raza@gmail.com",
+    "Prefers low skin fade, no gel.",
+  ],
+  [
+    "dc2",
+    "Usama Farooq",
+    "0312 4567890",
+    "",
+    "Regular — visits every 2 weeks.",
+  ],
+  [
+    "dc3",
+    "Hassan Javed",
+    "0333 7654321",
+    "hassan.javed@outlook.com",
+    "Wedding grooming in December.",
+  ],
   ["dc4", "Zain Abbas", "0345 1122334", "", ""],
-  ["dc5", "Fahad Iqbal", "0300 9988776", "fahad.iqbal@gmail.com", "Use mild facial products."],
+  [
+    "dc5",
+    "Fahad Iqbal",
+    "0300 9988776",
+    "fahad.iqbal@gmail.com",
+    "Use mild facial products.",
+  ],
   ["dc6", "Saad Mehmood", "0321 5566778", "", "Likes a sharp beard line."],
   ["dc7", "Waqas Ahmed", "0307 3344556", "waqas.ahmed@yahoo.com", ""],
   ["dc8", "Noman Shah", "0315 6677889", "", "Classic side part."],
   ["dc9", "Talha Rafiq", "0336 2233445", "talha.rafiq@gmail.com", ""],
-  ["dc10", "Imran Siddiqui", "0302 7788990", "", "Brings his son for kids haircut."],
+  [
+    "dc10",
+    "Imran Siddiqui",
+    "0302 7788990",
+    "",
+    "Brings his son for kids haircut.",
+  ],
 ].map(([id, name, phone, email, notes], i) => ({
   id,
   name,
@@ -149,14 +375,57 @@ const demoAppointments = [
 });
 
 const baseReviews = [
-  { id: "r1", name: "Ahsan Ali", rating: 5, message: "Bohat zabardast service. Fade bilkul clean tha aur staff bhi bohat professional hai.", created: "2026-09-28T12:00:00.000Z" },
-  { id: "r2", name: "Bilal Hussain", rating: 5, message: "Shaadi se pehle grooming karwai, result excellent tha. Definitely recommended.", created: "2026-09-30T14:00:00.000Z" },
-  { id: "r3", name: "Hamza Tariq", rating: 4, message: "Booking easy hai aur salon ka environment clean aur premium lagta hai.", created: "2026-10-02T16:00:00.000Z" },
+  {
+    id: "r1",
+    name: "Ahsan Ali",
+    rating: 5,
+    message:
+      "Bohat zabardast service. Fade bilkul clean tha aur staff bhi bohat professional hai.",
+    created: "2026-09-28T12:00:00.000Z",
+  },
+  {
+    id: "r2",
+    name: "Bilal Hussain",
+    rating: 5,
+    message:
+      "Shaadi se pehle grooming karwai, result excellent tha. Definitely recommended.",
+    created: "2026-09-30T14:00:00.000Z",
+  },
+  {
+    id: "r3",
+    name: "Hamza Tariq",
+    rating: 4,
+    message:
+      "Booking easy hai aur salon ka environment clean aur premium lagta hai.",
+    created: "2026-10-02T16:00:00.000Z",
+  },
 ];
 const demoReviews = [
-  { id: "dr1", name: "Usama Farooq", rating: 5, message: "Great service and attention to detail. My beard has never looked better!", created: "2026-09-12T12:00:00.000Z", demo: true },
-  { id: "dr2", name: "Fahad Iqbal", rating: 5, message: "Amazing experience! Clean environment and professional staff.", created: "2026-09-18T12:00:00.000Z", demo: true },
-  { id: "dr3", name: "Talha Rafiq", rating: 4, message: "Excellent haircut and beard trim. Will visit again for sure.", created: "2026-09-22T12:00:00.000Z", demo: true },
+  {
+    id: "dr1",
+    name: "Usama Farooq",
+    rating: 5,
+    message:
+      "Great service and attention to detail. My beard has never looked better!",
+    created: "2026-09-12T12:00:00.000Z",
+    demo: true,
+  },
+  {
+    id: "dr2",
+    name: "Fahad Iqbal",
+    rating: 5,
+    message: "Amazing experience! Clean environment and professional staff.",
+    created: "2026-09-18T12:00:00.000Z",
+    demo: true,
+  },
+  {
+    id: "dr3",
+    name: "Talha Rafiq",
+    rating: 4,
+    message: "Excellent haircut and beard trim. Will visit again for sure.",
+    created: "2026-09-22T12:00:00.000Z",
+    demo: true,
+  },
 ];
 
 const DATA_VERSION = 3;
@@ -168,7 +437,10 @@ const seed = {
   clients: demoClients,
   appointments: demoAppointments,
   reviews: [...demoReviews, ...baseReviews],
+  /* Services shown in the homepage "Our Services" section (managed in Admin → Services) */
+  featuredServiceIds: ["s1", "s2", "s3", "s6"],
   settings: {
+    salonName: "Legend Barber Shop",
     phone: "+92 300 1234567",
     whatsapp: "+92 300 1234567",
     email: "hello@legendbarber.pk",
@@ -213,9 +485,15 @@ const mergeSeed = (saved) => {
   const db = {
     ...seed,
     ...saved,
-    services: Array.isArray(saved.services) && saved.services.length ? saved.services : seed.services,
+    services:
+      Array.isArray(saved.services) && saved.services.length
+        ? saved.services
+        : seed.services,
     packages: seed.packages,
-    barbers: Array.isArray(saved.barbers) && saved.barbers.length ? saved.barbers : seed.barbers,
+    barbers:
+      Array.isArray(saved.barbers) && saved.barbers.length
+        ? saved.barbers
+        : seed.barbers,
     clients: Array.isArray(saved.clients) ? saved.clients : [],
     appointments: Array.isArray(saved.appointments) ? saved.appointments : [],
     reviews: Array.isArray(saved.reviews) ? saved.reviews : seed.reviews,
@@ -223,21 +501,36 @@ const mergeSeed = (saved) => {
   };
   if (saved.version !== DATA_VERSION) {
     const used = new Set(db.appointments.flatMap((a) => a.serviceIds || []));
-    const legacy = { s8: "Haircut + Beard Combo", s9: "Royal Grooming Package" };
+    const legacy = {
+      s8: "Haircut + Beard Combo",
+      s9: "Royal Grooming Package",
+    };
     db.services = addMissing(
       db.services
         .filter((s) => !(legacy[s.id] === s.name && !used.has(s.id)))
-        .map((s) => ({ ...s, category: CATEGORY_MAP[s.category] || s.category })),
+        .map((s) => ({
+          ...s,
+          category: CATEGORY_MAP[s.category] || s.category,
+        })),
       seed.services,
     );
     db.barbers = db.barbers.map((b) =>
-      b.id === "b1" && b.image === px(4952620) ? { ...b, image: px(5568409) } : b,
+      b.id === "b1" && b.image === px(4952620)
+        ? { ...b, image: px(5568409) }
+        : b,
     );
     db.clients = addMissing(db.clients, demoClients);
     db.appointments = addMissing(db.appointments, demoAppointments);
     db.reviews = addMissing(db.reviews, demoReviews);
     db.version = DATA_VERSION;
   }
+  /* Keep only featured ids that still point to an existing service */
+  db.featuredServiceIds = featuredList(
+    db.services,
+    Array.isArray(saved.featuredServiceIds)
+      ? saved.featuredServiceIds
+      : seed.featuredServiceIds,
+  ).map((s) => s.id);
   return db;
 };
 
@@ -272,7 +565,39 @@ export function StoreProvider({ children }) {
     addService: (s) => up("services", (a) => [...a, { ...s, id: uid() }]),
     updateService: (id, p) =>
       up("services", (a) => a.map((x) => (x.id === id ? { ...x, ...p } : x))),
-    deleteService: (id) => up("services", (a) => a.filter((x) => x.id !== id)),
+    deleteService: (id) =>
+      setDb((d) => ({
+        ...d,
+        services: d.services.filter((x) => x.id !== id),
+        featuredServiceIds: (d.featuredServiceIds || []).filter(
+          (x) => x !== id,
+        ),
+      })),
+    /* Add/remove a service from the homepage section (max 4) */
+    toggleFeatured: (id) =>
+      setDb((d) => {
+        const cur = featuredList(d.services, d.featuredServiceIds).map(
+          (s) => s.id,
+        );
+        const next = cur.includes(id)
+          ? cur.filter((x) => x !== id)
+          : cur.length >= MAX_FEATURED || !d.services.some((s) => s.id === id)
+            ? cur
+            : [...cur, id];
+        return { ...d, featuredServiceIds: next };
+      }),
+    /* Move a featured service left (-1) or right (+1) on the homepage */
+    moveFeatured: (id, dir) =>
+      setDb((d) => {
+        const cur = featuredList(d.services, d.featuredServiceIds).map(
+          (s) => s.id,
+        );
+        const i = cur.indexOf(id);
+        const j = i + dir;
+        if (i < 0 || j < 0 || j >= cur.length) return d;
+        [cur[i], cur[j]] = [cur[j], cur[i]];
+        return { ...d, featuredServiceIds: cur };
+      }),
     addBarber: (b) => up("barbers", (a) => [...a, { ...b, id: uid() }]),
     updateBarber: (id, p) =>
       up("barbers", (a) => a.map((x) => (x.id === id ? { ...x, ...p } : x))),
@@ -294,6 +619,12 @@ export function StoreProvider({ children }) {
         ...a,
         { ...r, id: uid(), created: new Date().toISOString() },
       ]),
+    setReviewVisibility: (id, hidden) =>
+      up("reviews", (a) =>
+        a.map((review) =>
+          review.id === id ? { ...review, hidden: Boolean(hidden) } : review,
+        ),
+      ),
     deleteReview: (id) => up("reviews", (a) => a.filter((x) => x.id !== id)),
     updateSettings: (p) =>
       setDb((d) => ({ ...d, settings: { ...d.settings, ...p } })),

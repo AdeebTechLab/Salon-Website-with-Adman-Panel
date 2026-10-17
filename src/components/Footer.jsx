@@ -38,9 +38,13 @@ export default function Footer() {
           <a href={`mailto:${settings.email}`}>
             <Icon name="mail" size={15} /> {settings.email}
           </a>
-          <span>
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(settings.address)}`}
+            target="_blank"
+            rel="noreferrer"
+          >
             <Icon name="pin" size={15} /> {settings.address}
-          </span>
+          </a>
         </div>
         <div className="footer-col">
           <strong>Opening Hours</strong>

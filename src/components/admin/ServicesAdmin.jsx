@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { useStore, heroPhoto, money, CATEGORIES } from "../../store.jsx";
+import {
+  useStore,
+  heroPhoto,
+  money,
+  CATEGORIES,
+  featuredList,
+  MAX_FEATURED,
+} from "../../store.jsx";
+import Icon from "../Icon.jsx";
 const blank = {
   name: "",
   category: "Haircut",
@@ -17,7 +25,19 @@ const readImageFile = (file) =>
   });
 const cats = CATEGORIES;
 export default function ServicesAdmin() {
-  const { services, addService, updateService, deleteService } = useStore();
+  const {
+    services,
+    addService,
+    updateService,
+    deleteService,
+    featuredServiceIds,
+    toggleFeatured,
+    moveFeatured,
+  } = useStore();
+  /* Services shown in the homepage "Our Services" section, in order */
+  const featured = featuredList(services, featuredServiceIds);
+  const featuredPos = (id) => featured.findIndex((x) => x.id === id) + 1;
+  const full = featured.length >= MAX_FEATURED;
   const [f, setF] = useState(blank);
   const [edit, setEdit] = useState(null);
   const [fileName, setFileName] = useState("");
@@ -156,10 +176,105 @@ export default function ServicesAdmin() {
           {edit ? "Save service changes" : "Add service"}
         </button>
       </form>
+      <section
+        className="form-panel featured-panel"
+        aria-labelledby="featured-title"
+      >
+        <div className="form-heading">
+          <div>
+            <h3 id="featured-title">Homepage “Our Services” section</h3>
+            <span className="muted">
+              Choose up to {MAX_FEATURED} services to show on the homepage. Use
+              “Show on homepage” on any service below. Changes appear on the
+              website straight away.
+            </span>
+          </div>
+          <span className={"tag" + (full ? " tag-ok" : "")}>
+            {featured.length}/{MAX_FEATURED} selected
+          </span>
+        </div>
+        {featured.length ? (
+          <ol className="featured-picks">
+            {featured.map((s, i) => (
+              <li key={s.id}>
+                <span className="featured-pos" aria-hidden="true">
+                  {i + 1}
+                </span>
+                {s.image ? (
+                  <img src={s.image} alt="" />
+                ) : (
+                  <span className="featured-thumb" />
+                )}
+                <span className="featured-name">
+                  <strong>{s.name}</strong>
+                  <small>
+                    {s.category} · {money(s.price)}
+                  </small>
+                </span>
+                <span className="featured-actions">
+                  <button
+                    type="button"
+                    className="icon-btn"
+                    onClick={() => moveFeatured(s.id, -1)}
+                    disabled={i === 0}
+                    aria-label={`Move ${s.name} earlier`}
+                    title="Move earlier"
+                  >
+                    <Icon name="arrow" size={16} className="rot-up" />
+                  </button>
+                  <button
+                    type="button"
+                    className="icon-btn"
+                    onClick={() => moveFeatured(s.id, 1)}
+                    disabled={i === featured.length - 1}
+                    aria-label={`Move ${s.name} later`}
+                    title="Move later"
+                  >
+                    <Icon name="arrow" size={16} className="rot-down" />
+                  </button>
+                  <button
+                    type="button"
+                    className="lnk red"
+                    onClick={() => toggleFeatured(s.id)}
+                  >
+                    Remove
+                  </button>
+                </span>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <div className="empty-state">
+            <strong>No services on the homepage.</strong>
+            <span>
+              The “Our Services” section stays hidden until you feature at least
+              one service.
+            </span>
+          </div>
+        )}
+        {featured.length > 0 && !full && (
+          <span className="form-hint">
+            Add {MAX_FEATURED - featured.length} more to fill all {MAX_FEATURED}{" "}
+            homepage cards.
+          </span>
+        )}
+        {full && (
+          <span className="form-hint">
+            Homepage is full. Remove a service here to feature a different one.
+          </span>
+        )}
+      </section>
       <div className="service-admin-grid">
         {services.map((s) => (
           <article className="service-admin-card" key={s.id}>
-            <img src={s.image} alt="" />
+            <div className="service-admin-media">
+              <img src={s.image} alt="" />
+              {featuredPos(s.id) > 0 && (
+                <span className="featured-badge">
+                  <Icon name="star" size={13} /> Homepage #{featuredPos(s.id)}
+                </span>
+              )}
+            </div>
             <div>
               <div className="card-line">
                 <span className="tag">{s.category}</span>
@@ -169,6 +284,23 @@ export default function ServicesAdmin() {
               <p className="muted">{s.desc}</p>
               <small className="service-admin-dur">{s.duration} minutes</small>
               <div className="admin-actions">
+                <button
+                  type="button"
+                  className={
+                    "lnk feature-toggle" + (featuredPos(s.id) ? " on" : "")
+                  }
+                  aria-pressed={featuredPos(s.id) > 0}
+                  disabled={!featuredPos(s.id) && full}
+                  title={
+                    !featuredPos(s.id) && full
+                      ? `Homepage already shows ${MAX_FEATURED} services — remove one first`
+                      : undefined
+                  }
+                  onClick={() => toggleFeatured(s.id)}
+                >
+                  <Icon name="star" size={14} />
+                  {featuredPos(s.id) ? "On homepage" : "Show on homepage"}
+                </button>
                 <button
                   className="lnk"
                   onClick={() => {
