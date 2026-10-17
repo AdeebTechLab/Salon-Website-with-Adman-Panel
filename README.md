@@ -15,7 +15,7 @@ A React 18 + Vite barber shop website with customer-facing pages and a demo admi
 - Node.js (LTS recommended)
 - npm
 
-## Run locally
+## Run Locally
 
 1. Extract or clone this repository.
 2. Open the project folder in VS Code or a terminal.
@@ -33,21 +33,23 @@ A React 18 + Vite barber shop website with customer-facing pages and a demo admi
 
 5. Open the local URL printed in the terminal (usually `http://localhost:5173`).
 
-## Build for production
+## Build for Production
 
 ```bash
 npm run build
 npm run preview
 ```
 
-## Demo and security notes
+## Demo and Security Notes
 
-- The admin panel currently uses a demo password: `admin123`. This is **not secure authentication**. Change/remove it before presenting the project publicly, and do not reuse this password for real accounts.
+- **Admin Panel URL:** `/admin`
+- **Admin Password:** `admin123`
+- This is a demo password for demonstration purposes only. It is not secure authentication. Do not use it for real accounts or sensitive information.
 - The project stores booking, customer, review and settings data in the browser's `localStorage` (`legend-db-v2`). Data is local to the browser/device and is not shared through a server or database.
 - Before using this website for real customers, add a backend/database, server-side authentication and validation, and appropriate privacy/security protections.
 - Sample/demo data can be managed from **Admin → Website → Demo data**.
 
-## Design and assets
+## Design and Assets
 
 - Main styles are in `src/index.css`.
 - Icons are inline SVGs in `src/components/Icon.jsx`.
